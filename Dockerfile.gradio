@@ -1,0 +1,63 @@
+# Use an official Python runtime as a parent image
+FROM msoo.ces.myfiinet.com:6702/nvidia/cuda:12.1.0-devel-ubuntu22.04 as builder
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Install system dependencies
+RUN apt-get update -y \
+    && apt-get install -y python3-pip git build-essential curl libpq-dev gcc\
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# update pip
+RUN pip install poetry==1.8.2
+
+ENV POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
+
+# Set work directory
+WORKDIR /app
+
+# Copy requirements
+COPY pyproject.toml ./
+COPY poetry.lock ./
+COPY poetry.toml ./
+
+# setting arch explictly
+ENV TORCH_CUDA_ARCH_LIST="6.0;7.0"
+
+# Install python dependencies (repload, fixed) 因為要resolve的關係, preload不會太有效, 暫時相信poetry自己的cache好了
+# RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry install --only preload
+
+# Install python dependencies
+RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry install --no-root --no-directory
+
+# Use a lighter base image
+FROM msoo.ces.myfiinet.com:6702/nvidia/cuda:12.1.0-runtime-ubuntu22.04 as runner
+
+RUN apt-get update -y && apt-get install -y python3.10 
+
+# Set work directory
+WORKDIR /app
+
+# Copy installed dependencies and binaries from builder, this line assume both in app folder
+ENV VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
+
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+
+# Declare fetch arg to environment during build phase from docker-compose setting
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+RUN apt-get update && apt-get install -y curl telnet vim dnsutils python3-opencv git wget ca-certificates
+
+RUN pip install gradio==3.50.2
+RUN pip install packaging==21.3
+
+# Copy the application script
+COPY demo/gradio_app.py gradio_app.py
+
+# Set the entrypoint
+CMD ["python", "gradio_app.py"]

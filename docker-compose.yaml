@@ -1,0 +1,21 @@
+version: "3.8"
+# docker compose -f docker-compose-plugin-table.yaml up
+services:
+  groundingdino_gradio:
+    build:
+      dockerfile: Dockerfile.gradio
+
+    restart: always
+    image: msoo.ces.myfiinet.com:6702/groundingdino_gradio:1.0.0
+
+    ports:
+      - "6603:8080"
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              # count: 4
+              capabilities: [gpu]
+              device_ids: ["1"]
