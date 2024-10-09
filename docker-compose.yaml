@@ -8,8 +8,14 @@ services:
     restart: always
     image: msoo.ces.myfiinet.com:6702/groundingdino_gradio:1.0.0
 
+    volumes:
+      - /data/.cache:/root/.cache
+      - ./groundingdino:/app/groundingdino
+      - ./demo/gradio_app.py:/app/gradio_app.py
+    # entrypoint:  ["tail", "-f", "/dev/null"]
+    entrypoint:  ["python", "gradio_app.py"]
     ports:
-      - "6603:8080"
+      - "6614:7579"
 
     deploy:
       resources:

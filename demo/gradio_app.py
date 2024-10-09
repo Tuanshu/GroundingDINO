@@ -1,3 +1,5 @@
+print('in the import script...')
+
 import argparse
 from functools import partial
 import cv2
@@ -12,12 +14,12 @@ from pathlib import Path
 import warnings
 
 import torch
+print('in the import script...torch loaded')
 
-# prepare the environment
-os.system("python setup.py build develop --user")
-os.system("pip install packaging==21.3")
-os.system("pip install gradio==3.50.2")
-
+# # prepare the environment
+# os.system("python setup.py build develop --user")
+# os.system("pip install packaging==21.3")
+# os.system("pip install gradio==3.50.2")
 
 warnings.filterwarnings("ignore")
 
@@ -39,13 +41,13 @@ ckpt_repo_id = "ShilongLiu/GroundingDINO"
 ckpt_filenmae = "groundingdino_swint_ogc.pth"
 
 
-def load_model_hf(model_config_path, repo_id, filename, device='cpu'):
+def load_model_hf(model_config_path, repo_id, filename, device='cuda'):
     args = SLConfig.fromfile(model_config_path) 
     model = build_model(args)
     args.device = device
 
     cache_file = hf_hub_download(repo_id=repo_id, filename=filename)
-    checkpoint = torch.load(cache_file, map_location='cpu')
+    checkpoint = torch.load(cache_file, map_location='cuda')
     log = model.load_state_dict(clean_state_dict(checkpoint['model']), strict=False)
     print("Model loaded from {} \n => {}".format(cache_file, log))
     _ = model.eval()
@@ -77,7 +79,7 @@ def run_grounding(input_image, grounding_caption, box_threshold, text_threshold)
     image_pil: Image = image_transform_grounding_for_vis(init_image)
 
     # run grounidng
-    boxes, logits, phrases = predict(model, image_tensor, grounding_caption, box_threshold, text_threshold, device='cpu')
+    boxes, logits, phrases = predict(model, image_tensor, grounding_caption, box_threshold, text_threshold, device='cuda')
     annotated_frame = annotate(image_source=np.asarray(image_pil), boxes=boxes, logits=logits, phrases=phrases)
     image_with_box = Image.fromarray(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
 
@@ -85,12 +87,12 @@ def run_grounding(input_image, grounding_caption, box_threshold, text_threshold)
     return image_with_box
 
 if __name__ == "__main__":
-
+    print('gradio_app called')
     parser = argparse.ArgumentParser("Grounding DINO demo", add_help=True)
     parser.add_argument("--debug", action="store_true", help="using debug mode")
     parser.add_argument("--share", action="store_true", help="share the app")
     args = parser.parse_args()
-
+    print('about to init gradio block')
     block = gr.Blocks().queue()
     with block:
         gr.Markdown("# [Grounding DINO](https://github.com/IDEA-Research/GroundingDINO)")
@@ -120,6 +122,6 @@ if __name__ == "__main__":
         run_button.click(fn=run_grounding, inputs=[
                         input_image, grounding_caption, box_threshold, text_threshold], outputs=[gallery])
 
-
+    print('about to launch')
     block.launch(server_name='0.0.0.0', server_port=7579, debug=args.debug, share=args.share)
 
