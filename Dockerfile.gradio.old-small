@@ -37,7 +37,7 @@ RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry install --no-root --no-di
 
 # Use a lighter base image
 # FROM msoo.ces.myfiinet.com:6702/nvidia/cuda:12.1.0-runtime-ubuntu22.04 as runner
-FROM nvidia/cuda:12.1.0-devel-ubuntu22.04 as runner
+FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04 as runner
 
 RUN apt-get update -y && apt-get install -y python3.10 
 
@@ -56,6 +56,7 @@ ARG HTTPS_PROXY
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl telnet vim dnsutils python3-opencv git wget ca-certificates
 
 RUN pip install gradio==3.50.2
+RUN pip install packaging==21.3
 RUN pip install opencv-python
 RUN pip install addict yapf supervision pycocotools
 
@@ -68,9 +69,10 @@ RUN apt-get install -y build-essential gcc
 # RUN apt-get install -y nvidia-cuda-toolkit
 RUN apt-get install -y --no-install-recommends cuda-command-line-tools-12-1
 
+
 RUN pip install packaging==22
 
-RUN apt-get install -y python-dev-is-python3
+
 # # Set the entrypoint
 # CMD ["python", "gradio_app.py"]
 

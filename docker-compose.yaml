@@ -13,7 +13,9 @@ services:
       - ./groundingdino:/app/groundingdino
       - ./demo/gradio_app.py:/app/gradio_app.py
     # entrypoint:  ["tail", "-f", "/dev/null"]
-    entrypoint:  ["python", "gradio_app.py"]
+    # entrypoint:  ["python", "gradio_app.py"]
+    entrypoint: ["sh", "-c", "python setup.py build develop --user && python gradio_app.py"]
+
     ports:
       - "6614:7579"
 
