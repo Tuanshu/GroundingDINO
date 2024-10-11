@@ -101,9 +101,9 @@ if __name__ == "__main__":
         with gr.Row():
             with gr.Column():
                 input_image = gr.Image(source='upload', type="pil")
-                grounding_caption = gr.Textbox(label="Detection Prompt")
+                grounding_caption = gr.Textbox(label="提示詞")
                 run_button = gr.Button(label="Run")
-                with gr.Accordion("Advanced options", open=False):
+                with gr.Accordion("進階", open=False):
                     box_threshold = gr.Slider(
                         label="圖形閾值", minimum=0.0, maximum=1.0, value=0.25, step=0.001
                     )
