@@ -30,10 +30,10 @@ from groundingdino.util.slconfig import SLConfig
 from groundingdino.util.utils import clean_state_dict
 from groundingdino.util.inference import annotate, load_image, predict
 import groundingdino.datasets.transforms as T
-
+import os
 from huggingface_hub import hf_hub_download
 
-
+SERVICE_URL=os.environ['SERVICE_URL']
 
 # Use this command for evaluate the Grounding DINO model
 config_file = "groundingdino/config/GroundingDINO_SwinT_OGC.py"
@@ -95,8 +95,8 @@ if __name__ == "__main__":
     print('about to init gradio block')
     block = gr.Blocks().queue()
     with block:
-        gr.Markdown("# [Grounding DINO](https://github.com/IDEA-Research/GroundingDINO)")
-        gr.Markdown("### Open-World Detection with Grounding DINO")
+        gr.Markdown(f"# [CES-IT iCenter]({SERVICE_URL})")
+        gr.Markdown("### 自然語言物件偵測")
 
         with gr.Row():
             with gr.Column():
@@ -105,10 +105,10 @@ if __name__ == "__main__":
                 run_button = gr.Button(label="Run")
                 with gr.Accordion("Advanced options", open=False):
                     box_threshold = gr.Slider(
-                        label="Box Threshold", minimum=0.0, maximum=1.0, value=0.25, step=0.001
+                        label="圖形閾值", minimum=0.0, maximum=1.0, value=0.25, step=0.001
                     )
                     text_threshold = gr.Slider(
-                        label="Text Threshold", minimum=0.0, maximum=1.0, value=0.25, step=0.001
+                        label="文字閾值", minimum=0.0, maximum=1.0, value=0.25, step=0.001
                     )
 
             with gr.Column():

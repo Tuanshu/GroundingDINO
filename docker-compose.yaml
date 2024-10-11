@@ -14,11 +14,11 @@ services:
       - ./demo/gradio_app.py:/app/gradio_app.py
     # entrypoint:  ["tail", "-f", "/dev/null"]
     # entrypoint:  ["python", "gradio_app.py"]
-    entrypoint: ["sh", "-c", "python setup.py build develop --user && python gradio_app.py"]
+    entrypoint: ["sh", "-c", "python setup.py build develop --user && python gradio_app.py"] # 第一次執行需要這個
 
     ports:
       - "6614:7579"
-
+    env_file: ".env"
     deploy:
       resources:
         reservations:
